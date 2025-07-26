@@ -1,7 +1,6 @@
 package com.br.hexa_api.controller;
 
 import com.br.hexa_api.dto.UserDTO;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -11,5 +10,4 @@ public interface UserControllerInterface {
     UserDTO getUserById(Long id);
     List<UserDTO> searchUsersByName(String name);
     List<UserDTO> getUsersByIdQueryParam(Long id);
-
 }

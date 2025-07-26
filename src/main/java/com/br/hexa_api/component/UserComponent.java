@@ -5,37 +5,55 @@ import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class UserComponent {
 
-    // Filtrar usuários por parte do nome
+    // Filtra usuários pelo nome (case-insensitive)
     public List<User> filterUsersByName(List<User> users, String name) {
+        if (users == null || name == null) return List.of();
+
         return users.stream()
-                .filter(user -> user.getName() != null && user.getName().toLowerCase().contains(name.toLowerCase()))
+                .filter(Objects::nonNull)
+                .filter(user -> user.getName() != null)
+                .filter(user -> user.getName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    // Encontrar usuário por ID (em lista)
+    // Busca usuário pelo ID com segurança contra null
     public Optional<User> findUserById(List<User> users, Long id) {
+        if (users == null || id == null) return Optional.empty();
+
         return users.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(Objects::nonNull)
+                .filter(user -> Objects.equals(Long.valueOf(user.getId()), id))
                 .findFirst();
     }
 
-    // Ordenar usuários por nome
+    // Ordena usuários por nome (case-insensitive)
     public List<User> sortUsersByName(List<User> users) {
+        if (users == null) return List.of();
+
         return users.stream()
-                .sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(
+                        User::getName,
+                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                ))
                 .collect(Collectors.toList());
     }
 
-    // Contar usuários com email corporativo
+    // Conta quantos usuários têm e-mails corporativos
     public long countCorporateEmails(List<User> users) {
+        if (users == null) return 0;
+
         return users.stream()
-                .filter(user -> user.getEmail() != null && user.getEmail().endsWith(".com"))
+                .filter(Objects::nonNull)
+                .map(User::getEmail)
+                .filter(email -> email != null && email.endsWith(".com"))
                 .count();
     }
 }

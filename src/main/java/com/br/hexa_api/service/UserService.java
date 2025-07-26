@@ -7,7 +7,9 @@ import com.br.hexa_api.dto.UserDTO;
 import com.br.hexa_api.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,22 +25,32 @@ public class UserService {
         this.userComponent = userComponent;
     }
 
+    // Retorna todos os usuários convertidos para DTO
     public List<UserDTO> getUsers() {
-        List<User> users = jsonPlaceholderClient.getUsers();
-        return users.stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        List<User> users = Optional.ofNullable(jsonPlaceholderClient.getUsers())
+                .orElse(Collections.emptyList());
+
+        return toDTOList(users);
     }
 
-    public UserDTO getUserById(Long id) {
-        User user = jsonPlaceholderClient.getUserById(id);
-        return userMapper.toDTO(user);
+    // Busca usuário por ID, convertendo para DTO
+    public Optional<UserDTO> getUserById(Long id) {
+        return Optional.ofNullable(jsonPlaceholderClient.getUserById(id))
+                .map(userMapper::toDTO);
     }
 
+    // Filtra usuários pelo nome e converte para DTO
     public List<UserDTO> searchUsersByName(String name) {
-        List<User> users = jsonPlaceholderClient.getUsers();
+        List<User> users = Optional.ofNullable(jsonPlaceholderClient.getUsers())
+                .orElse(Collections.emptyList());
+
         List<User> filtered = userComponent.filterUsersByName(users, name);
-        return filtered.stream()
+        return toDTOList(filtered);
+    }
+
+    // Método utilitário privado para converter listas
+    private List<UserDTO> toDTOList(List<User> users) {
+        return users.stream()
                 .map(userMapper::toDTO)
                 .collect(Collectors.toList());
     }

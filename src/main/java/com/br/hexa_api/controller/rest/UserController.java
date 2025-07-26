@@ -1,14 +1,15 @@
 package com.br.hexa_api.controller.rest;
 
 import com.br.hexa_api.controller.UserControllerInterface;
-import com.br.hexa_api.service.UserService;
 import com.br.hexa_api.dto.UserDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.br.hexa_api.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/users") // Define prefixo comum
 public class UserController implements UserControllerInterface {
 
     private final UserService userService;
@@ -18,35 +19,38 @@ public class UserController implements UserControllerInterface {
     }
 
     @Override
-    @GetMapping("/users")
+    @GetMapping
     public List<UserDTO> getUsers() {
-        return userService.getUsers();
+        List<UserDTO> users = userService.getUsers();
+        return ResponseEntity.ok(users).getBody();
     }
 
-    @GetMapping("/usersParam")
+    @GetMapping("/search")
+    @Override
+    public List<UserDTO> searchUsersByName(@RequestParam String name) {
+        List<UserDTO> users = userService.searchUsersByName(name);
+        return ResponseEntity.ok(users).getBody();
+    }
+
+    @GetMapping("/{id}")
+    @Override
+    public UserDTO getUserById(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build()).getBody();
+    }
+
+    @Override
+    @GetMapping("/param")
     public List<UserDTO> getUsersByIdQueryParam(@RequestParam(value = "id", required = false) Long id) {
         if (id != null) {
-            UserDTO user = userService.getUserById(id);
-            return List.of(user);
+            return userService.getUserById(id)
+                    .map(List::of)
+                    .orElse(List.of());
         } else {
             return userService.getUsers();
         }
     }
 
-
-
-
-    @GetMapping("/users/{id}")
-    @Override
-    public UserDTO getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
-
-
-    @GetMapping("/users/search")
-    @Override
-    public List<UserDTO> searchUsersByName(@RequestParam String name) {
-        return userService.searchUsersByName(name);
-    }
 
 }
